@@ -10,20 +10,23 @@
 /**
  * 信号量
  */
-class sem {
+class Sem {
 
 public:
-    sem();
-    explicit sem(int num);
-    ~sem();
-    bool wait();
-    bool post();
+    Sem();
+
+    explicit Sem(int num);
+
+    ~Sem();
+
+    bool Wait();
+
+    bool Post();
 
 private:
 
-    sem_t m_sem{};
+    sem_t sem_{};
 
 };
-
 
 #endif //LINUX_WEB_SERVER_SEM_H

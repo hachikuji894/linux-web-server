@@ -5,29 +5,29 @@
 #include <exception>
 #include "sem.h"
 
-sem::sem() {
-    if (sem_init(&m_sem, 0, 0) != 0) {
+Sem::Sem() {
+    if (sem_init(&sem_, 0, 0) != 0) {
         throw std::exception();
     }
 }
 
-sem::sem(int num) {
-    if (sem_init(&m_sem, 0, num) != 0) {
+Sem::Sem(int num) {
+    if (sem_init(&sem_, 0, num) != 0) {
         throw std::exception();
     }
 }
 
 
-sem::~sem() {
-    sem_destroy(&m_sem);
+Sem::~Sem() {
+    sem_destroy(&sem_);
 }
 
-bool sem::wait() {
-    return sem_wait(&m_sem) == 0;
+bool Sem::Wait() {
+    return sem_wait(&sem_) == 0;
 }
 
-bool sem::post() {
-    return sem_post(&m_sem) == 0;
+bool Sem::Post() {
+    return sem_post(&sem_) == 0;
 }
 
 

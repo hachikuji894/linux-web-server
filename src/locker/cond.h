@@ -10,18 +10,23 @@
 /**
  * 条件变量
  */
-class cond {
+class Cond {
 
 public:
-    cond();
-    ~cond();
-    bool wait(pthread_mutex_t *mutex);
-    bool timed_wait(pthread_mutex_t *mutex,struct timespec t);
-    bool signal();
-    bool broadcast();
+    Cond();
+
+    ~Cond();
+
+    bool Wait(pthread_mutex_t *mutex);
+
+    bool TimedWait(pthread_mutex_t *mutex, struct timespec t);
+
+    bool Signal();
+
+    bool Broadcast();
 
 private:
-    pthread_cond_t m_cond{};
+    pthread_cond_t cond_{};
 
 };
 

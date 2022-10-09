@@ -10,39 +10,44 @@
 #include <locker/locker.h>
 #include <locker/sem.h>
 
-template <typename T>
-class thread_pool {
+template<typename T>
+class ThreadPool {
+
 public:
-    explicit thread_pool(int thread_number = 8, int max_request = 10000);
-    ~thread_pool();
-    bool append(T *request);
+
+    explicit ThreadPool(int thread_number = 8, int max_request = 10000);
+
+    ~ThreadPool();
+
+    bool Append(T *request);
+
 private:
 
-    static void *worker(void *arg);
-    void run();
+    static void *Worker(void *arg);
+
+    void Run();
 
 private:
 
     // 线程池中的线程数
-    int m_thread_number;
+    int thread_number_{};
 
     // 请求队列中允许的最大请求数
-    int m_max_request;
+    int max_request_{};
 
     // 描述线程池的数组，其大小为m_thread_number
-    pthread_t *m_threads;
+    pthread_t *threads_{};
 
     // 请求队列
-    std::list<T *> m_work_queue;
+    std::list<T *> work_queue_;
 
     // 保护请求队列的互斥锁
-    locker m_queue_locker;
+    Locker queue_locker_;
 
     // 是否有任务需要处理
-    sem m_queue_state;
+    Sem queue_state_;
 
 };
-
 
 
 #endif //LINUX_WEB_SERVER_THREAD_POOL_H

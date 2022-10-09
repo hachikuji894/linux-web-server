@@ -10,17 +10,21 @@
 /**
  * 线程同步机制封装类（互斥锁）
  */
-class locker {
+class Locker {
 
 public:
-    locker();
-    ~locker();
-    bool lock();
-    bool unlock();
-    pthread_mutex_t * get();
+    Locker();
+
+    ~Locker();
+
+    bool Lock();
+
+    bool Unlock();
+
+    pthread_mutex_t *get_mutex();
 
 private:
-    pthread_mutex_t m_mutex{};
+    pthread_mutex_t mutex_{};
 
 };
 

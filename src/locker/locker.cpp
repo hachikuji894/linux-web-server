@@ -5,26 +5,26 @@
 #include <exception>
 #include "locker.h"
 
-locker::locker() {
+Locker::Locker() {
 
-    if (pthread_mutex_init(&m_mutex, nullptr) != 0) {
+    if (pthread_mutex_init(&mutex_, nullptr) != 0) {
         throw std::exception();
     }
 
 }
 
-locker::~locker() {
-    pthread_mutex_destroy(&m_mutex);
+Locker::~Locker() {
+    pthread_mutex_destroy(&mutex_);
 }
 
-bool locker::lock() {
-    return pthread_mutex_lock(&m_mutex) == 0;
+bool Locker::Lock() {
+    return pthread_mutex_lock(&mutex_) == 0;
 }
 
-bool locker::unlock() {
-    return pthread_mutex_unlock(&m_mutex) == 0;
+bool Locker::Unlock() {
+    return pthread_mutex_unlock(&mutex_) == 0;
 }
 
-pthread_mutex_t *locker::get() {
-    return &m_mutex;
+pthread_mutex_t *Locker::get_mutex() {
+    return &mutex_;
 }
