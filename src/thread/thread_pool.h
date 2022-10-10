@@ -7,8 +7,8 @@
 
 #include <pthread.h>
 #include <list>
-#include <locker/locker.h>
-#include <locker/sem.h>
+#include "locker/locker.h"
+#include "locker/sem.h"
 
 template<typename T>
 class ThreadPool {

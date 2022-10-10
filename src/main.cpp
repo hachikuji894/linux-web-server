@@ -9,7 +9,7 @@
 #include <cstdio>
 
 #include "thread/thread_pool.cpp"
-#include "http/http_connect.h"
+#include "http/http_handler.h"
 #include "utils/utils.h"
 
 #define MAX_FD 65535
@@ -30,14 +30,14 @@ int main(int argc, char *argv[]) {
     // 对 SIGPIPE 信号进行处理
     AddSig(SIGPIPE, SIG_IGN);
 
-    ThreadPool<HttpConnect> *pool;
+    ThreadPool<HttpHandler> *pool;
     try {
-        pool = new ThreadPool<HttpConnect>();
+        pool = new ThreadPool<HttpHandler>();
     } catch (...) {
         exit(-1);
     }
 
-    auto *users = new HttpConnect[MAX_FD];
+    auto *users = new HttpHandler[MAX_FD];
 
     // 1. 创建 socket（用于监听的套接字）
     int listen_fd = socket(PF_INET, SOCK_STREAM, 0);
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
     // 此结构体用来保存内核态返回给用户态发生改变的文件描述符信息
     epoll_event events[MAX_EVENT_NUMBER];
 
-    HttpConnect::epoll_fd_ = epoll_fd;
+    HttpHandler::epoll_fd_ = epoll_fd;
 
     while (true) {
         // 使用epoll，设置为永久阻塞，有文件描述符变化才返回
@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
                      std::cout << "errno is: " << errno << std::endl;
                      break;
                 }
-                if (HttpConnect::user_count_ >= MAX_FD) {
+                if (HttpHandler::user_count_ >= MAX_FD) {
                     std::cout << "internal server busy" << std::endl;
                     break;
                 }
