@@ -15,7 +15,7 @@ void RemoveFd(int epoll_fd, int fd);
 void AddSig(int sig, void(handler)(int));
 
 // 设置非阻塞
-int SetNonblocking(int fd);
+void SetNonblocking(int fd);
 
 
 #endif //LINUX_WEB_SERVER_UTILS_H

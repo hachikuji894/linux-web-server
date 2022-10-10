@@ -3,5 +3,4 @@ cmake-build-debug/
 cmake-build-release/
 .idea/
 
-
-.clion.source.upload.marker
+**/.clion.source.upload.marker
