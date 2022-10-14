@@ -89,18 +89,23 @@ int main(int argc, char *argv[]) {
             int sock_fd = events[i].data.fd;
             // 4. 接收客户端连接
             if (sock_fd == listen_fd) {
+
                 struct sockaddr_in client_address{};
                 socklen_t client_address_len = sizeof client_address;
                 int conn_fd = accept(listen_fd, (struct sockaddr *) &client_address, &client_address_len);
+
+                // 水平触发
                 if (conn_fd < 0) {
-                     std::cout << "errno is: " << errno << std::endl;
-                     break;
+                    std::cout << "errno is: " << errno << std::endl;
+                    continue;
                 }
                 if (HttpHandler::user_count_ >= MAX_FD) {
                     std::cout << "internal server busy" << std::endl;
-                    break;
+                    continue;
                 }
+
                 users[conn_fd].Init(conn_fd, client_address);
+
             } else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) {
                 // 异常断开
                 users[sock_fd].Close();

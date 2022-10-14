@@ -1,5 +1,5 @@
 //
-// Created by Alberta on 2022/9/17.
+// Created by chenjiajun1999 on 2022/9/17.
 //
 
 #include <exception>
@@ -29,5 +29,3 @@ bool Sem::Wait() {
 bool Sem::Post() {
     return sem_post(&sem_) == 0;
 }
-
-

@@ -1,5 +1,5 @@
 //
-// Created by Hachikuji on 2022/10/9.
+// Created by chenjiajun1999 on 2022/10/9.
 //
 
 #include "utils.h"
@@ -27,7 +27,6 @@ void AddFd(int epoll_fd, int fd, bool one_shot) {
     }
 
     SetNonblocking(fd);
-
 }
 
 
@@ -42,7 +41,7 @@ void AddSig(int sig, void(handler)(int)) {
 
 void RemoveFd(int epoll_fd, int fd) {
 
-    epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, nullptr);
+    epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
     close(fd);
 
 }
@@ -60,7 +59,7 @@ void ModFd(int epoll_fd, int fd, int ev) {
 
     epoll_event event{};
     event.data.fd = fd;
-    event.events = ev | EPOLLIN | EPOLLRDHUP;
+    event.events = ev | EPOLLONESHOT | EPOLLRDHUP;
     int ret = epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event);
     if (ret == -1) {
         perror("epoll_ctl");

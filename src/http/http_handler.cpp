@@ -1,5 +1,5 @@
 //
-// Created by Hachikuji on 2022/10/6.
+// Created by chenjiajun1999 on 2022/10/6.
 //
 #include "http_handler.h"
 #include "utils/utils.h"
@@ -46,7 +46,7 @@ void HttpHandler::Init() {
     checked_idx_ = 0;
     read_idx_ = 0;
     write_idx_ = 0;
-    doc_root_ =  get_current_dir_name();
+    doc_root_ = get_current_dir_name();
 
     bytes_to_send_ = 0;
     bytes_have_send_ = 0;
@@ -74,7 +74,7 @@ void HttpHandler::Init(int sock_fd, const sockaddr_in &address) {
 
 void HttpHandler::Close() {
 
-    //关闭连接，关闭一个连接，客户总量减一
+    // 关闭连接，关闭一个连接，客户总量减一
     if (sock_fd_ != -1) {
         RemoveFd(epoll_fd_, sock_fd_);
         sock_fd_ = -1;
@@ -83,6 +83,10 @@ void HttpHandler::Close() {
 
 }
 
+/**
+ * 循环读取客户数据，直到无数据可读或对方关闭连接
+ * @return
+ */
 bool HttpHandler::Read() {
 
     if (read_idx_ >= READ_BUFFER_SIZE) {
@@ -108,18 +112,24 @@ bool HttpHandler::Read() {
 bool HttpHandler::Write() {
 
     int temp = 0;
+
+    // 表示要发送的数据长度为 0，响应报文为空，一般不会出现这种情况
     if (bytes_to_send_ == 0) {
         ModFd(epoll_fd_, sock_fd_, EPOLLIN);
+        Init();
         return true;
     }
 
     while (true) {
+
+        // 将响应报文的状态行、消息头、空行和响应正文发送给浏览器端
         temp = writev(sock_fd_, iv_, iv_count_);
 
         if (temp < 0) {
+            // 判断缓冲区是否满了
             if (errno == EAGAIN) {
+                // 重新注册写事件
                 ModFd(epoll_fd_, sock_fd_, EPOLLOUT);
-                Init();
                 return true;
             }
             Unmap();
@@ -137,6 +147,7 @@ bool HttpHandler::Write() {
             iv_[0].iov_len = iv_[0].iov_len - bytes_have_send_;
         }
 
+        // 数据已全部发送完
         if (bytes_to_send_ <= 0) {
             Unmap();
             ModFd(epoll_fd_, sock_fd_, EPOLLIN);
@@ -144,17 +155,21 @@ bool HttpHandler::Write() {
             if (linger_) {
                 Init();
                 return true;
-            } else {
+            } else
                 return false;
-            }
+
         }
     }
 }
 
+/**
+ * 解析 HTTP 请求
+ */
 void HttpHandler::Process() {
 
-    // 解析 HTTP 请求
     HTTP_CODE read_ret = ProcessRead();
+
+    // 解析不完整，需要继续接受数据
     if (read_ret == NO_REQUEST) {
         ModFd(epoll_fd_, sock_fd_, EPOLLIN);
         return;
@@ -165,6 +180,7 @@ void HttpHandler::Process() {
     if (!write_ret) {
         Close();
     }
+    // 注册并监听写事件
     ModFd(epoll_fd_, sock_fd_, EPOLLOUT);
 
 
@@ -191,9 +207,8 @@ HttpHandler::HTTP_CODE HttpHandler::ProcessRead() {
                 ret = ParseHeaders(text);
                 if (ret == BAD_REQUEST)
                     return BAD_REQUEST;
-                else if (ret == GET_REQUEST) {
+                else if (ret == GET_REQUEST)
                     return DoRequest();
-                }
                 break;
             }
             case CHECK_STATE_CONTENT: {
@@ -219,18 +234,18 @@ HttpHandler::HTTP_CODE HttpHandler::ParseRequestLine(char *text) {
 
     // GET /index.html HTTP/1.1
     url_ = strpbrk(text, " \t");
-    if (!url_) {
+    if (!url_)
         return BAD_REQUEST;
-    }
+
     // GET\0/index.html HTTP/1.1
     *url_++ = '\0';
     char *method = text;
 
     if (strcasecmp(method, "GET") == 0)
         method_ = GET;
-    else if (strcasecmp(method, "POST") == 0) {
+    else if (strcasecmp(method, "POST") == 0)
         method_ = POST;
-    } else
+    else
         return BAD_REQUEST;
 
     url_ += strspn(url_, " \t");
@@ -262,7 +277,7 @@ HttpHandler::HTTP_CODE HttpHandler::ParseRequestLine(char *text) {
     if (!url_ || url_[0] != '/')
         return BAD_REQUEST;
 
-
+    // 请求行处理完毕，将主状态机转移处理请求头
     check_state_ = CHECK_STATE_HEADER;
     return NO_REQUEST;
 
@@ -356,12 +371,14 @@ HttpHandler::HTTP_CODE HttpHandler::DoRequest() {
     int len = strlen(doc_root_);
     strncpy(real_file_ + len, url_, FILENAME_LEN - len - 1);
 
-    // 获取 real_file_ 文件的相关转台信息，-1 失败 0 成功
+    // 获取 real_file_ 文件的相关状态信息，-1 失败 0 成功
     if (stat(real_file_, &file_stat_) < 0)
         return NO_RESOURCE;
+
     // 判断访问权限
     if (!(file_stat_.st_mode & S_IROTH))
         return FORBIDDEN_REQUEST;
+
     // 判断是否是目录
     if (S_ISDIR(file_stat_.st_mode))
         return BAD_REQUEST;
@@ -475,9 +492,9 @@ bool HttpHandler::AddStatusLine(int status, const char *title) {
 bool HttpHandler::AddHeaders(int content_length) {
 
     return AddContentLength(content_length)
+           && AddContentType()
            && AddLinger()
-           && AddBlankLine()
-           && AddContentType();
+           && AddBlankLine();
 
 }
 
@@ -504,7 +521,3 @@ bool HttpHandler::AddBlankLine() {
     return AddResponse("%s", "\r\n");
 
 }
-
-
-
-
